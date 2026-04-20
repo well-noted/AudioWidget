@@ -1,0 +1,6 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/language
+type: text/plain
+caption: Transcription Language
+description: Optional ISO-639-1 language code (e.g. 'en', 'es', 'fr', 'de', 'ja'). Leave empty for auto-detection. Setting this improves accuracy and speed for known languages.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+

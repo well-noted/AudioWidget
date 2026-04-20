@@ -1,0 +1,6 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/api-key
+type: text/plain
+caption: OpenAI API Key
+description: Your OpenAI API key for Whisper transcription. ⚠️ Stored in plaintext within the wiki file — only use in personal/local wikis.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+

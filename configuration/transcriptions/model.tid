@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/model
+type: text/plain
+caption: Transcription Model
+description: The OpenAI model to use for transcription. Default: whisper-1. Other options may include future Whisper variants.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+gpt-4o-transcribe

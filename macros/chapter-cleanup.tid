@@ -1,0 +1,17 @@
+created: 20260303000000000
+modified: 20260303000000000
+tags: 
+title: $:/plugins/NoteStreams/AudioSuite/macros/chapter-cleanup
+type: text/vnd.tiddlywiki
+
+\define audiobook-chapter-filter(bookTiddler)
+[tag[$bookTiddler$]has[_canonical_uri]] [tag[$bookTiddler$]type[audio/mpeg]] [tag[$bookTiddler$]type[audio/ogg]] [tag[$bookTiddler$]type[audio/wav]] [tag[$bookTiddler$]type[audio/x-wav]] +[unique[]!title[$bookTiddler$]sort[title]]
+\end
+
+\define audiobook-unprocessed-filter(bookTiddler)
+[tag[$bookTiddler$]has[_canonical_uri]] [tag[$bookTiddler$]type[audio/mpeg]] [tag[$bookTiddler$]type[audio/ogg]] [tag[$bookTiddler$]type[audio/wav]] [tag[$bookTiddler$]type[audio/x-wav]] +[unique[]!title[$bookTiddler$]!has[chapter-number]sort[title]]
+\end
+
+\define audiobook-all-chapters-filter(bookTiddler)
+[tag[$bookTiddler$]has[_canonical_uri]] [tag[$bookTiddler$]type[audio/mpeg]] [tag[$bookTiddler$]type[audio/ogg]] [tag[$bookTiddler$]type[audio/wav]] [tag[$bookTiddler$]type[audio/x-wav]] +[unique[]!title[$bookTiddler$]sort[title]]
+\end

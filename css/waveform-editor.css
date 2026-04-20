@@ -1,0 +1,208 @@
+/*\
+title: $:/plugins/NoteStreams/AudioSuite/css/waveform-editor.css
+type: text/css
+tags: $:/tags/Stylesheet
+\*/
+
+.AudioSuite-waveform-editor {
+    margin: 8px 0;
+    border: 1px solid var(--we-border, var(--palette-border, <<colour table-border>>));
+    border-radius: 6px;
+    padding: 6px;
+    background: var(--we-background, var(--palette-page, <<colour page-background>>));
+    position: relative;
+}
+
+.AudioSuite-waveform-editor__toolbar {
+    display: flex;
+    flex-wrap: wrap; /* allow controls to flow to multiple rows */
+    align-items: center;
+    gap: 8px;
+    row-gap: 6px;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    color: var(--we-foreground, var(--palette-fg, <<colour foreground>>));
+}
+
+/* Allow toolbar children to shrink and wrap without overflowing */
+.AudioSuite-waveform-editor__toolbar > * {
+    flex: 0 1 auto;
+    min-width: 0; /* allow text to wrap/ellipsis when needed */
+}
+
+.AudioSuite-waveform-editor__readout {
+    margin-left: auto;
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    letter-spacing: 0.02em;
+}
+
+.AudioSuite-waveform-editor__canvas {
+    display: block;
+    width: 100%;
+    border-radius: 4px;
+    background: var(--we-background, var(--palette-page, <<colour page-background>>));
+}
+
+.AudioSuite-waveform-editor__canvas:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--we-accent, var(--palette-accent, <<colour primary>>));
+}
+
+.AudioSuite-waveform-editor__tooltip {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    background: var(--we-foreground, var(--palette-fg, <<colour foreground>>));
+    color: var(--we-background, var(--palette-page, <<colour page-background>>));
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: monospace;
+    white-space: nowrap;
+    z-index: 100;
+    transform: translateX(-50%);
+    letter-spacing: 0.03em;
+}
+
+.AudioSuite-waveform-editor__kb-hint {
+    font-size: 0.75em;
+    opacity: 0.5;
+    margin-left: 8px;
+    font-style: italic;
+    color: var(--we-muted, var(--palette-muted, <<colour muted-foreground>>));
+}
+
+/* Minimap */
+.AudioSuite-waveform-editor__minimap {
+    display: block;
+    width: 100%;
+    height: 24px;
+    border-radius: 0 0 4px 4px;
+    margin-top: 2px;
+    background: var(--we-background, var(--palette-page, <<colour page-background>>));
+    border-top: 1px solid var(--we-border, var(--palette-border, <<colour table-border>>));
+    cursor: pointer;
+}
+
+/* Loop & Snap buttons styling */
+.AudioSuite-waveform-editor__loop,
+.AudioSuite-waveform-editor__snap {
+    border: 1px solid var(--we-accent, var(--palette-accent, <<colour primary>>));
+    color: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    background: transparent;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.82em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.AudioSuite-waveform-editor__loop:hover,
+.AudioSuite-waveform-editor__snap:hover {
+    background: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    color: var(--we-background, var(--palette-page, <<colour page-background>>));
+}
+
+.AudioSuite-waveform-editor__preroll,
+.AudioSuite-waveform-editor__postroll {
+    border: 1px solid var(--we-muted, var(--palette-muted, <<colour muted-foreground>>));
+    color: var(--we-foreground, var(--palette-fg, <<colour foreground>>));
+    background: transparent;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.78em;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.AudioSuite-waveform-editor__preroll:hover,
+.AudioSuite-waveform-editor__postroll:hover {
+    background: var(--we-muted, rgba(150,150,150,0.15));
+}
+
+.AudioSuite-waveform-editor__preview-group {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.AudioSuite-waveform-editor__amp-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.AudioSuite-waveform-editor__amp-label {
+    font-size: 0.85em;
+}
+
+.AudioSuite-waveform-editor__amp-slider {
+    width: 60px;
+    height: 4px;
+    accent-color: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    cursor: pointer;
+}
+
+/* Transcribe button + status */
+.AudioSuite-waveform-editor__transcribe {
+    border: 1px solid var(--we-accent, var(--palette-accent, <<colour primary>>));
+    color: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    background: transparent;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.82em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.AudioSuite-waveform-editor__transcribe:hover {
+    background: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    color: var(--we-background, var(--palette-page, <<colour page-background>>));
+}
+
+.AudioSuite-waveform-editor__transcribe:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.AudioSuite-waveform-editor__transcribe-status {
+    font-size: 0.78em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.AudioSuite-waveform-editor__transcribe-status--progress {
+    color: var(--we-accent, var(--palette-accent, <<colour primary>>));
+    animation: AudioSuite-listen-pulse 1.2s ease-in-out infinite;
+}
+
+.AudioSuite-waveform-editor__transcribe-status--success {
+    color: #22c55e;
+}
+
+.AudioSuite-waveform-editor__transcribe-status--error {
+    color: #ef4444;
+}
+
+.AudioSuite-waveform-editor__transcribe-status--info {
+    color: var(--we-muted, var(--palette-muted, <<colour muted-foreground>>));
+    font-style: italic;
+}
+
+@media (max-width: 600px) {
+    .AudioSuite-waveform-editor__toolbar {
+        flex-wrap: wrap;
+    }
+    .AudioSuite-waveform-editor__preview-group,
+    .AudioSuite-waveform-editor__amp-group {
+        order: 10;
+        width: 100%;
+        margin-top: 4px;
+    }
+    .AudioSuite-waveform-editor__transcribe {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+}

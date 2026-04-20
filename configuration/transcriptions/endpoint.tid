@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/endpoint
+type: text/plain
+caption: API Endpoint
+description: The transcription API endpoint URL. Default: https://api.openai.com/v1/audio/transcriptions. Override for Azure OpenAI, local Whisper servers (e.g. http://localhost:8080/v1/audio/transcriptions), or compatible APIs.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+https://api.openai.com/v1/audio/transcriptions

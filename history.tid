@@ -1,0 +1,9 @@
+created: 20260218032019953
+modified: 20260218032027703
+tags: 
+title: $:/plugins/NoteStreams/AudioSuite/history
+type: text/vnd.tiddlywiki
+
+* ''0.0.3'' -- Playlist progress indicator: added a weighted "Overall: XX.X% (Track N of M)" display for multi-track playlists. Computes progress from the live playback position of the current track, saved positions of other tracks, and a completed-track heuristic for sequential audiobook listening. New public API method `service.getTrackSavedPosition(trackTitle)` reads persisted positions for any track (real or virtual) without loading it. Progress updates on `timeupdate`, `trackchanged`, and `ended` events.
+* ''0.0.2'' -- Persistent Audio Service refactor: extracted all audio-owning logic (the `<audio>` element, playback state, position persistence, event-bus handlers, beforeunload, ended/error/seek handlers, track history) into a singleton startup module (`audio-service.js`) that lives outside the widget lifecycle. The `podcast-player` widget is now a thin UI shell that subscribes to service events. Audio playback now survives `$:/layout` switches.
+* ''0.0.1'' -- After having done some [[previous experiments|https://talk.tiddlywiki.org/t/playing-with-parsers/11518]] with audio parsing, I decided to start from square one with the goal of finding a way of processing notes not just for podcasts but audiobooks as well. 

@@ -1,0 +1,713 @@
+title: $:/plugins/NoteStreams/AudioSuite/styles/styles.tid
+tags: $:/tags/Stylesheet
+type: text/css
+
+/* ══════════════════════════════════════════════════
+   AUDIO SUITE — Modern Podcast Player Theme
+   ══════════════════════════════════════════════════ */
+
+/* title: $:/plugins/NoteStreams/AudioSuite/css/waveform-editor.css */
+
+.AudioSuite-waveform-editor {
+    margin: 8px 0;
+    border: 1px solid var(--palette-border, #ccc);
+    border-radius: 6px;
+    padding: 6px;
+  /* Prefer the page palette key used by the waveform drawing; fall back to older background key */
+  background: var(--palette-page, var(--palette-background, #fafafa));
+}
+
+.AudioSuite-waveform-editor__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+}
+
+.AudioSuite-waveform-editor__readout {
+    margin-left: auto;
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--palette-accent, #4285f4);
+}
+
+.AudioSuite-waveform-editor__canvas {
+    display: block;
+    width: 100%;
+    border-radius: 4px;
+  background: var(--palette-page, var(--palette-background, #fff));
+}
+
+
+/* Palette variables (TiddlyWiki) */
+:root {
+  --tw-bg: <<colour background>>;
+  --tw-fg: <<colour foreground>>;
+}
+/* ── Reset for plugin elements ─────────────────── */
+.AudioSuite-player *,
+.AudioSuite-notation * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   PODCAST PLAYER
+   ══════════════════════════════════════════════════ */
+
+.AudioSuite-player {
+  background: var(--tw-bg);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px 0;
+  color: var(--tw-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top accent line */
+.AudioSuite-player::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e94560, #c23bf0, #533bf0);
+  border-radius: 16px 16px 0 0;
+}
+
+/* ── Track Selector ────────────────────────────── */
+
+.AudioSuite-player__select {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  background: var(--as-wf-btn-bg, rgba(255,255,255,0.08));
+  border: 1px solid var(--palette-border, rgba(0,0,0,0.12));
+  border-radius: 10px;
+  color: var(--palette-fg, var(--tw-fg));
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.AudioSuite-player__select:hover {
+  border-color: var(--palette-accent, rgba(0,0,0,0.12));
+  background-color: var(--palette-accent, rgba(255,255,255,0.12));
+}
+
+.AudioSuite-player__select:focus {
+  outline: none;
+  border-color: #e94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+}
+
+.AudioSuite-player__select option {
+  background: var(--tw-bg);
+  color: var(--tw-fg);
+}
+
+/* ── Transport Controls ────────────────────────── */
+
+.AudioSuite-player__transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.AudioSuite-player__back-row {
+  display: flex;
+  justify-content: center;
+  min-height: 1.8em;
+  margin-bottom: 12px;
+}
+
+.AudioSuite-player__back-btn {
+  font-size: 0.85em;
+  opacity: 0.85;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.AudioSuite-btn {
+  /* Palette-aware button styling: prefers waveform-derived variables */
+  background: var(--as-wf-btn-bg, rgba(255,255,255,0.06));
+  border: 1px solid var(--palette-border, rgba(0,0,0,0.06));
+  color: var(--palette-fg, var(--tw-fg, #222));
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.08);
+}
+
+.AudioSuite-btn:hover {
+  background: var(--palette-accent, #e94560);
+  color: var(--palette-page, #fff);
+  border-color: var(--palette-accent, #e94560);
+  transform: translateY(-1px);
+}
+
+.AudioSuite-btn:active {
+  transform: translateY(0);
+  background: color-mix(in srgb, var(--palette-accent, #e94560) 80%, transparent);
+}
+
+/* ── Primary Play Button (large, circular) ─────── */
+
+.AudioSuite-player__play {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: linear-gradient(135deg, #e94560, #c23bf0);
+  border: none;
+  color: var(--tw-fg);
+  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+  flex-shrink: 0;
+}
+
+.AudioSuite-player__play:hover {
+  background: linear-gradient(135deg, #ff5a7a, #d050ff);
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
+  transform: scale(1.08);
+  color: var(--tw-fg);
+  border: none;
+}
+
+.AudioSuite-player__play:active {
+  transform: scale(1.0);
+}
+
+/* ── Playback Rate Selector ────────────────────── */
+
+.AudioSuite-player__rate {
+  background: var(--as-wf-btn-bg, rgba(255,255,255,0.08));
+  border: 1px solid var(--palette-border, rgba(255,255,255,0.1));
+  border-radius: 8px;
+  color: var(--palette-fg, var(--tw-fg));
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+  min-width: 55px;
+  transition: all 0.2s;
+}
+
+.AudioSuite-player__rate:hover {
+  background: var(--palette-accent, rgba(255,255,255,0.15));
+  border-color: var(--palette-accent, rgba(255,255,255,0.2));
+}
+
+.AudioSuite-player__rate:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.AudioSuite-player__rate option {
+  background: var(--tw-bg);
+  color: var(--tw-fg);
+}
+
+/* ── Seek Row ──────────────────────────────────── */
+
+.AudioSuite-player__seek-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.AudioSuite-player__time {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--tw-fg);
+  min-width: 110px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+/* ── Custom Seekbar / Range Slider ─────────────── */
+
+.AudioSuite-player__seekbar {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--as-wf-mid, rgba(255,255,255,0.12));
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: height 0.15s;
+}
+
+.AudioSuite-player__seekbar:hover {
+  height: 8px;
+}
+
+/* Webkit (Chrome, Safari, Edge) track */
+.AudioSuite-player__seekbar::-webkit-slider-runnable-track {
+  height: 100%;
+  border-radius: 3px;
+  background: transparent;
+}
+
+/* Webkit thumb */
+.AudioSuite-player__seekbar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tw-fg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  margin-top: -5px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.AudioSuite-player__seekbar:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+/* Firefox track */
+.AudioSuite-player__seekbar::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--as-wf-mid, rgba(255,255,255,0.08));
+}
+
+/* Firefox thumb */
+.AudioSuite-player__seekbar::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--tw-fg);
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.AudioSuite-player__seekbar:hover::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
+/* Firefox progress fill */
+.AudioSuite-player__seekbar::-moz-range-progress {
+  background: linear-gradient(90deg, #e94560, #c23bf0);
+  border-radius: 3px;
+  height: 6px;
+}
+
+/* ── Capture / Notation Area ───────────────────── */
+
+.AudioSuite-player__capture {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.AudioSuite-player__note-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--as-wf-btn-bg, rgba(0,0,0,0.02));
+  border: 1px solid var(--palette-border, rgba(0,0,0,0.06));
+  border-radius: 10px;
+  color: var(--palette-fg, var(--tw-fg));
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.AudioSuite-player__note-input::placeholder {
+  color: var(--as-wf-muted, rgba(0,0,0,0.4));
+}
+
+.AudioSuite-player__note-input:focus {
+  outline: none;
+  border-color: var(--palette-border, rgba(0,0,0,0.12));
+  background: color-mix(in srgb, var(--as-wf-btn-bg, rgba(0,0,0,0.04)) 85%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--as-wf-btn-bg, rgba(0,0,0,0.04)) 90%, transparent);
+}
+
+.AudioSuite-player__capture-btn {
+  border: none;
+  color: var(--tw-fg);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(233, 69, 96, 0.3);
+  transition: all 0.2s;
+}
+
+.AudioSuite-player__capture-btn:hover {
+  background: linear-gradient(135deg, #ff5a7a, #d050ff);
+  box-shadow: 0 5px 18px rgba(233, 69, 96, 0.4);
+  transform: translateY(-1px);
+  color: var(--tw-fg);
+  border: none;
+}
+
+.AudioSuite-player__capture-btn:active {
+  transform: translateY(0);
+}
+
+/* Debug status styles removed */
+
+/* ══════════════════════════════════════════════════
+   AUDIO NOTATION WIDGET
+   ══════════════════════════════════════════════════ */
+
+.AudioSuite-notation {
+  background: var(--tw-bg);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.AudioSuite-notation__header {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tw-fg);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(0,0,0,0.04);
+}
+
+/* ── Manual Add Row ────────────────────────────── */
+
+.AudioSuite-notation__add-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.AudioSuite-notation__time-input {
+  width: 85px;
+  padding: 8px 10px;
+  border: 1px solid #d4d0e8;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  text-align: center;
+  color: var(--tw-fg);
+  transition: border-color 0.2s;
+}
+
+.AudioSuite-notation__time-input:focus {
+  outline: none;
+  border-color: #7c6fe0;
+  box-shadow: 0 0 0 3px rgba(124, 111, 224, 0.15);
+}
+
+.AudioSuite-notation__note-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d4d0e8;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--tw-fg);
+  transition: border-color 0.2s;
+}
+
+.AudioSuite-notation__note-input:focus {
+  outline: none;
+  border-color: #7c6fe0;
+  box-shadow: 0 0 0 3px rgba(124, 111, 224, 0.15);
+}
+
+/* ── Notation List ─────────────────────────────── */
+
+.AudioSuite-notation__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.AudioSuite-notation__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.AudioSuite-notation__row:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+/* ── Timecode Badge ────────────────────────────── */
+
+.AudioSuite-notation__timecode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #5b4fcf, #7c6fe0);
+  color: var(--tw-fg);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 68px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(91, 79, 207, 0.25);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.AudioSuite-notation__timecode:hover {
+  background: linear-gradient(135deg, #7c6fe0, #9b8ff0);
+  box-shadow: 0 3px 10px rgba(91, 79, 207, 0.35);
+  transform: translateY(-1px);
+}
+
+.AudioSuite-notation__timecode:active {
+  transform: translateY(0);
+}
+
+/* ── Note Text ─────────────────────────────────── */
+
+.AudioSuite-notation__note-text {
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--tw-fg);
+  line-height: 1.45;
+}
+
+/* ── Delete Button ─────────────────────────────── */
+
+.AudioSuite-notation__del {
+  color: var(--tw-fg);
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.AudioSuite-notation__del:hover {
+  color: #e94560;
+  background: rgba(233, 69, 96, 0.1);
+}
+
+/* ── Empty State ───────────────────────────────── */
+
+.AudioSuite-notation__empty {
+  color: rgba(0,0,0,0.45);
+  font-style: italic;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+/* ── Notation Add Button ───────────────────────── */
+
+.AudioSuite-notation__add-row .AudioSuite-btn {
+  background: linear-gradient(135deg, #5b4fcf, #7c6fe0);
+  border: none;
+  color: var(--tw-fg);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(91, 79, 207, 0.25);
+}
+
+.AudioSuite-notation__add-row .AudioSuite-btn:hover {
+  background: linear-gradient(135deg, #7c6fe0, #9b8ff0);
+  color: var(--tw-fg);
+  border: none;
+  box-shadow: 0 4px 14px rgba(91, 79, 207, 0.35);
+}
+
+/* ══════════════════════════════════════════════════
+   SOUND EFFECT WIDGET
+   ══════════════════════════════════════════════════ */
+
+.tc-sound-effect {
+  display: inline;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — improved mobile/touch styles
+   ══════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .AudioSuite-player {
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+
+  .AudioSuite-player__transport {
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .AudioSuite-btn {
+    padding: 12px 18px;
+    font-size: 15px;
+    border-radius: 10px;
+    min-height: 44px;
+  }
+
+  .AudioSuite-player__play {
+    width: 62px;
+    height: 62px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .AudioSuite-player__seek-row {
+    gap: 10px;
+  }
+
+  .AudioSuite-player__time {
+    min-width: 72px;
+  }
+
+  .AudioSuite-player__seekbar {
+    height: 10px;
+  }
+
+  .AudioSuite-player__seekbar:hover {
+    height: 12px;
+  }
+
+  .AudioSuite-player__seekbar::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -7px;
+  }
+
+  .AudioSuite-player__seekbar::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  .AudioSuite-player__capture {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .AudioSuite-player__note-input {
+    font-size: 15px;
+    padding: 12px;
+  }
+
+  .AudioSuite-player__capture-btn {
+    width: 100%;
+    padding: 12px 16px;
+    min-height: 44px;
+    text-align: center;
+  }
+
+  .AudioSuite-notation__add-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .AudioSuite-notation__time-input {
+    width: 100%;
+  }
+
+  .AudioSuite-notation__row {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .AudioSuite-notation__timecode {
+    min-width: 56px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+
+/* ── Inline editor styles ─────────────────────── */
+.AudioSuite-notation__entry-editor {
+  min-height: 1.8em;
+  padding: 6px 8px;
+  outline: 2px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.AudioSuite-notation__entry-editor:focus {
+  outline-color: rgba(124, 111, 224, 0.25);
+  background: rgba(124, 111, 224, 0.03);
+}
+
+.AudioSuite-notation__entry-editor:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+
+.AudioSuite-notation__timecode--inline {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.9;
+  margin-right: 6px;
+}

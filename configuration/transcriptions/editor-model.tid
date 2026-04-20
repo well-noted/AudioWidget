@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-model
+type: text/plain
+caption: Editor Model
+description: The model to use for post-processing/editing transcriptions. Default: gpt-4.1-nano. Use a chat-capable model.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+gpt-4.1-nano

@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-endpoint
+type: text/plain
+caption: Editor API Endpoint
+description: The chat/completions API endpoint used to post-process transcriptions. Default: https://api.openai.com/v1/chat/completions. Override for enterprise or local endpoints.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+https://api.openai.com/v1/chat/completions

@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-prompt
+type: text/plain
+caption: Editor Prompt
+description: Optional system prompt guiding the editing model. Default instructs the model to improve coherence and insert <br><br> between sections. Customize for tone and constraints.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+You are an assistant that edits transcriptions for readability. Insert <br><br> between logical sections, improve coherence and grammar, preserve original meaning, and return only the edited transcription with <br><br> used as section separators. Do not add commentary.

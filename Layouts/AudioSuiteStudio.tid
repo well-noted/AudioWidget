@@ -1,0 +1,449 @@
+created: 20260304005046033
+creator: admin
+description: Focused audio workspace with library, persistent player, and note detail pane
+modified: 20260330175646026
+modifier: admin
+name: AudioSuite Studio
+tags: $:/tags/Layout
+title: $:/plugins/NoteStreams/AudioSuite/Layouts/AudioSuiteStudio
+type: application/x-tiddler
+
+\import [subfilter{$:/core/config/GlobalImportFilter}]
+
+\define has-audiobook-tag() [tags[]tag[Audiobook]]
+
+\define as-library-filter() [type[audio/mpeg]] [type[audio/ogg]] [tag[Audiobook]] [type[audio/wav]] [type[audio/x-wav]] [type[audio/mp3]] [type[audio/mp4]] [type[audio/flac]] [suffix[.mp3]] [suffix[.ogg]] [suffix[.wav]] [suffix[.m4a]] [suffix[.flac]] [tag[audio]] [has[canonical_uri]] [has[_canonical_uri]] [type[application/x-tiddler-dictionary]filter<has-audiobook-tag>indexes[]] +[!is[system]search{$:/state/AudioSuite/librarySearch}sort[title]]
+
+\define as-close-note-actions()
+<$action-setfield $tiddler="$:/state/AudioSuite/NotePanel" list=""/>
+\end
+
+<$navigator story="$:/state/AudioSuite/NotePanel" history="$:/state/AudioSuite/NoteHistory">
+<div class="as-layout">
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="as-topbar">
+  <div class="as-topbar__left">
+    <$button class="tc-btn-invisible as-topbar__home" message="tm-home">{{$:/SiteTitle}}</$button>
+  </div>
+  <div class="as-topbar__right">
+    <!-- ─── Mobile-only: Switch to standard layout ─── -->
+    <$button class="tc-btn-invisible as-topbar__btn as-topbar__btn--switch-layout"
+             set="$:/layout" setTo="" tooltip="Switch to standard TiddlyWiki layout">
+      🔀 Standard View
+    </$button>
+
+    <$reveal state="$:/state/AudioSuite/libraryVisible" type="match" text="no">
+      <$button class="tc-btn-invisible as-topbar__btn" set="$:/state/AudioSuite/libraryVisible" setTo="yes">📚 Show Library</$button>
+    </$reveal>
+    <$reveal state="$:/state/AudioSuite/libraryVisible" type="nomatch" text="no" default="yes">
+      <$button class="tc-btn-invisible as-topbar__btn as-topbar__btn--active" set="$:/state/AudioSuite/libraryVisible" setTo="no">📚 Hide Library</$button>
+    </$reveal>
+    <$button class="tc-btn-invisible as-topbar__btn" message="tm-save-wiki" tooltip="Save wiki">💾</$button>
+  </div>
+</div>
+
+
+<!-- ═══ MAIN ═══ -->
+<div class="as-main">
+
+  <!-- ─── LIBRARY (LEFT) ─── -->
+  <$reveal state="$:/state/AudioSuite/libraryVisible" type="nomatch" text="no"
+           default="yes" animate="no" retain="yes" tag="div" class="as-library-reveal">
+    <div class="as-library">
+      <div class="as-library__header">📚 Audio Library</div>
+      <div class="as-library__search">
+        <$edit-text tiddler="$:/state/AudioSuite/librarySearch" tag="input"
+                    placeholder="Search audio..." default="" class="as-library__search-input"/>
+        <$reveal state="$:/state/AudioSuite/librarySearch" type="nomatch" text="">
+          <$button class="tc-btn-invisible as-library__search-clear" set="$:/state/AudioSuite/librarySearch" setTo="">✕</$button>
+        </$reveal>
+      </div>
+      <div class="as-library__list">
+        <$list filter=<<as-library-filter>> variable="source" emptyMessage="<div class='as-library__empty'>No audio sources found.</div>">
+          <$button set="$:/state/AudioSuite/currentSource" setTo=<<source>> class={{{ [{$:/state/AudioSuite/currentSource}match<source>then[as-library__item as-library__item--active]else[as-library__item]] }}}>
+            <!-- Clear book state so regular tracks don't inherit stale audiobook mode -->
+            <$action-setfield $tiddler="$:/state/AudioSuite/currentBook" text=""/>
+            <!-- Find audiobook: iterate all Audiobook tiddlers, check their dictionaries -->
+            <$list filter="[tag[Audiobook]]" variable="book">
+              <!-- Check virtual tracks: dictionaries tagged with this book -->
+              <$list filter="[tag<book>type[application/x-tiddler-dictionary]]" variable="dict">
+                <$set name="trackUri" filter="[<dict>getindex<source>]">
+                  <$list filter="[<trackUri>minlength[1]]" variable="_">
+                    <$action-setfield $tiddler="$:/state/AudioSuite/currentBook" text=<<book>>/>
+                    <$action-setfield $tiddler=<<book>> audio-current-track=<<source>>/>
+                  </$list>
+                </$set>
+              </$list>
+              <!-- Check real chapter tiddlers tagged with this book -->
+              <$list filter="[<source>tag<book>]" variable="_">
+                <$action-setfield $tiddler="$:/state/AudioSuite/currentBook" text=<<book>>/>
+                <$action-setfield $tiddler=<<book>> audio-current-track=<<source>>/>
+              </$list>
+            </$list>
+            <!-- ═══ FIX: detect if source IS an Audiobook parent ═══ -->
+            <$list filter="[<source>tag[Audiobook]]" variable="_">
+              <$action-setfield $tiddler="$:/state/AudioSuite/currentBook" text=<<source>>/>
+            </$list>
+            <span class="as-library__item-indicator"><$list filter="[{$:/state/AudioSuite/currentSource}match<source>]" variable="ignore">▶ </$list></span>
+            <span class="as-library__item-title"><$view tiddler=<<source>> field="caption"><$view tiddler=<<source>> field="title"/></$view></span>
+          </$button>
+        </$list>
+      </div>
+    </div>
+  </$reveal>
+
+  <!-- ─── Mobile backdrop: library ─── -->
+  <$reveal state="$:/state/AudioSuite/libraryVisible" type="nomatch" text="no"
+           default="yes" animate="no" tag="div" class="as-mobile-backdrop-library">
+    <$button class="as-mobile-backdrop__dismiss tc-btn-invisible"
+             set="$:/state/AudioSuite/libraryVisible" setTo="no">&nbsp;</$button>
+  </$reveal>
+
+  <!-- ─── Mobile backdrop: detail panel ─── -->
+  <$list filter="[list[$:/state/AudioSuite/NotePanel]last[]]" variable="__bk">
+    <div class="as-mobile-backdrop-detail">
+      <$button class="as-mobile-backdrop__dismiss tc-btn-invisible">
+        <<as-close-note-actions>>
+        &nbsp;
+      </$button>
+    </div>
+  </$list>
+
+  <!-- ─── WORKSPACE (CENTER) ─── -->
+  <div class="as-workspace">
+    <$set name="activeTrack" value={{$:/state/AudioSuite/currentSource}}>
+      <$list filter="[<activeTrack>minlength[1]]" variable="src" emptyMessage="<div class='as-workspace__empty'><div class='as-workspace__empty-icon'>🎧</div><div class='as-workspace__empty-title'>AudioSuite Studio</div><div class='as-workspace__empty-hint'>Select a track from the library to start listening and taking notes.</div></div>">
+        <div class="as-now-playing">
+          <span class="as-now-playing__label">Now Playing</span>
+          <!-- ═══ CHANGED: Now Playing display — "Book: Chapter" for audiobooks ═══ -->
+          <$set name="currentBook" value={{$:/state/AudioSuite/currentBook}}>
+            <!-- Non-audiobook: just show the track title -->
+            <$list filter="[<currentBook>minlength[1]]" variable="_" emptyMessage="""
+              <span class="as-now-playing__title"><$view tiddler=<<src>> field="caption"><$view tiddler=<<src>> field="title"/></$view></span>
+            """>
+              <!-- Audiobook: show "Book Title: Chapter Title" -->
+              <$set name="nowPlaying" tiddler=<<currentBook>> field="audio-current-track">
+                <span class="as-now-playing__title">
+                  <span class="as-now-playing__book"><$view tiddler=<<currentBook>> field="caption"><$view tiddler=<<currentBook>> field="title"/></$view></span><!--
+                  --><!-- Only show separator + chapter if a chapter is actually set -->
+                  <$list filter="[<nowPlaying>minlength[1]]" variable="_">
+                    <span class="as-now-playing__sep">:</span>
+                    <span class="as-now-playing__chapter"><$view tiddler=<<nowPlaying>> field="caption"><$view tiddler=<<nowPlaying>> field="title"/></$view></span>
+                  </$list>
+                </span>
+              </$set>
+            </$list>
+          </$set>
+          <!-- ═══ END CHANGED ═══ -->
+          <$button class="tc-btn-invisible as-now-playing__close">
+            <$action-setfield $tiddler="$:/state/AudioSuite/currentSource" text=""/>
+            <$action-setfield $tiddler="$:/state/AudioSuite/currentBook" text=""/>
+            ✕
+          </$button>
+        </div>
+        <div class="as-player-area">
+          <$set name="currentBook" value={{$:/state/AudioSuite/currentBook}}>
+            <$list filter="[<currentBook>minlength[1]]" variable="_" emptyMessage="""
+              <$podcast-player filter="[title<src>]" persistPosition="yes" autoPause="yes" rewindOnResume="3" enableShortcuts="yes" class="as-player">
+                <$audio-notation editable="yes" updateParent="yes"/>
+              </$podcast-player>
+            """>
+              <$podcast-player
+                  filter="[tag<currentBook>has[src]] [tag<currentBook>has[_canonical_uri]] +[unique[]sort[title]]"
+                  srcField="src"
+                  mode="audiobook"
+                  bookTiddler=<<currentBook>>
+                  persistPosition="yes" autoPause="yes" rewindOnResume="3" enableShortcuts="yes" class="as-player">
+                  <$audio-notation editable="yes" updateParent="yes"/>
+              </$podcast-player>
+            </$list>
+          </$set>
+        </div>
+      </$list>
+    </$set>
+  </div>
+
+
+  <!-- ─── NOTE DETAIL (RIGHT) ─── -->
+  <div class={{{ [list[$:/state/AudioSuite/NotePanel]count[]compare:integer:gt[0]then[as-detail as-detail--has-note]else[as-detail]] }}}>
+    <div class="as-detail__header">
+      <div class="as-detail__header-left">
+        <span class="as-detail__header-icon">📝</span>
+        <span class="as-detail__header-label">Note Detail</span>
+      </div>
+      <$button class="tc-btn-invisible as-detail__close" tooltip="Close note">
+        <<as-close-note-actions>>
+        ✕
+      </$button>
+    </div>
+    <div class="as-detail__body">
+      <$navigator story="$:/StoryList" history="$:/HistoryList">
+        <$list filter="[list[$:/state/AudioSuite/NotePanel]last[]]" variable="activeNote"
+               emptyMessage="""<div class='as-detail__empty'><div class='as-detail__empty-icon'>📝</div><div class='as-detail__empty-text'>Click 📄 on a notation entry to view its details here.</div></div>""">
+          <$tiddler tiddler=<<activeNote>>>
+            <$transclude tiddler="$:/NoteStreams/Templates/Automatic/AudioNote" mode="block"/>
+          </$tiddler>
+        </$list>
+      </$navigator>
+    </div>
+  </div>
+
+</div><!-- .as-main -->
+
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   EMBEDDED STYLES — After </$navigator>, outside all widgets.
+   Same pattern as Sink Workbench. Raw CSS, no macro resolution.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══ NOW PLAYING: Book + Chapter styling ═══ */
+.as-now-playing__title {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0;
+  min-width: 0;
+}
+
+.as-now-playing__book {
+  font-weight: 600;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+  flex-shrink: 1;
+}
+
+.as-now-playing__sep {
+  margin: 0 0.4em;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.as-now-playing__chapter {
+  font-weight: 700;
+  opacity: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* Force ALL links visible in detail panel */
+.as-detail .tc-tiddlylink,
+.as-detail a.tc-tiddlylink-resolves,
+.as-detail a.tc-tiddlylink-missing,
+.as-detail blockquote .tc-tiddlylink,
+.as-detail blockquote a,
+.as-detail .rn-blockquote .tc-tiddlylink,
+.as-detail .rn-blockquote a,
+.as-detail .rn-quote .tc-tiddlylink,
+.as-detail .rn-quote a,
+.as-detail [class*="rn-type-"] .tc-tiddlylink,
+.as-detail [class*="rn-type-"] a,
+.as-detail .rn-commentary .tc-tiddlylink,
+.as-detail .rn-commentary a,
+.as-detail .rn-meta .tc-tiddlylink,
+.as-detail .rn-meta a,
+.as-detail .rn-note .tc-tiddlylink,
+.as-detail .rn-note a,
+.as-detail p .tc-tiddlylink,
+.as-detail p a,
+.as-detail div .tc-tiddlylink,
+.as-detail div a {
+  color: #e8a030 !important;
+  text-decoration: underline !important;
+  text-decoration-style: dotted !important;
+  text-underline-offset: 2px;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline !important;
+  cursor: pointer;
+}
+.as-detail .tc-tiddlylink:hover,
+.as-detail a:hover {
+  text-decoration-style: solid !important;
+  filter: brightness(1.2);
+}
+.as-detail a.tc-tiddlylink-missing {
+  opacity: 0.65 !important;
+  font-style: italic;
+}
+.as-detail .tc-tiddlylink-resolves {
+  font-weight: bold;
+}
+
+/* rn-note template */
+.as-detail__body .rn-note { padding: 0; }
+
+/* Meta line */
+.as-detail__body .rn-meta {
+  font-size: 0.85em;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+.as-detail__body .rn-meta-label { font-weight: 600; margin-right: 4px; }
+.as-detail__body .rn-meta-sep { margin: 0 8px; opacity: 0.4; }
+.as-detail__body .rn-meta-missing { opacity: 0.5; font-style: italic; }
+.as-detail__body .rn-source-link { color: #e8a030 !important; }
+
+/* Blockquote / transcription */
+.as-detail__body .rn-quote { margin: 10px 0; }
+.as-detail__body .rn-blockquote,
+.as-detail__body .rn-quote blockquote {
+  margin: 0; padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border-left: 3px solid #e8a030;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.92em; line-height: 1.65;
+}
+.as-detail__body .rn-type-concept { border-left-color: #4285f4; }
+.as-detail__body .rn-type-element { border-left-color: #34a853; }
+.as-detail__body .rn-type-character { border-left-color: #ea4335; }
+.as-detail__body .rn-type-reaction { border-left-color: #fbbc04; }
+.as-detail__body .rn-type-description { border-left-color: #9c27b0; }
+.as-detail__body .rn-type-evidence { border-left-color: #ff6d00; }
+.as-detail__body .rn-type-context { border-left-color: #00bcd4; }
+.as-detail__body .rn-type-setting { border-left-color: #795548; }
+
+/* Commentary */
+.as-detail__body .rn-commentary {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.as-detail__body .rn-commentary-title { font-weight: 600; font-size: 0.88em; margin-bottom: 6px; }
+.as-detail__body .rn-commentary-empty { opacity: 0.5; font-style: italic; font-size: 0.88em; cursor: pointer; padding: 6px 0; }
+.as-detail__body .rn-commentary-empty:hover { color: #e8a030; }
+
+/* Play button */
+.as-detail__body .audio-note__play-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 10px 0; padding: 8px 16px; font-weight: 600;
+  background: #e8a030 !important; color: #1a1a1a !important;
+  border: none !important; border-radius: 6px; cursor: pointer; font-size: 0.9em;
+}
+.as-detail__body .audio-note__play-btn:hover { filter: brightness(1.15); }
+
+/* Waveform editor constraints */
+.as-detail__body .AudioSuite-waveform-editor { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 8px 0; }
+.as-detail__body .AudioSuite-waveform-editor__canvas,
+.as-detail__body .AudioSuite-waveform-editor__minimap { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+.as-detail__body canvas { width: 100% !important; max-width: 100% !important; height: auto !important; }
+.as-detail__body .AudioSuite-waveform-editor__toolbar { display: flex; flex-wrap: wrap; gap: 4px 6px; padding: 6px 0; align-items: center; }
+.as-detail__body .AudioSuite-waveform-editor__toolbar .AudioSuite-btn { font-size: 0.76em; padding: 3px 6px; white-space: nowrap; }
+.as-detail__body .AudioSuite-waveform-editor__readout { font-size: 0.78em; opacity: 0.6; }
+.as-detail__body .AudioSuite-waveform-editor__kb-hint { display: none; }
+.as-detail__body .AudioSuite-waveform-editor__amp-slider { width: 50px; min-width: 40px; }
+
+/* Strip TiddlyWiki card chrome */
+.as-detail__body .tc-tiddler-frame,
+.as-detail__body .tc-tiddler-body,
+.as-detail__body .tc-tiddler-controls,
+.as-detail__body .tc-subtitle,
+.as-detail__body .tc-tags-wrapper {
+  margin: 0 !important; padding: 0 !important;
+  border: none !important; box-shadow: none !important; background: transparent !important;
+}
+.as-detail__body .tc-tiddler-title { display: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE OVERRIDES  (embedded <style> — no macro resolution)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Desktop only: force-hide backdrops */
+@media (min-width: 769px) {
+  .as-mobile-backdrop-library,
+  .as-mobile-backdrop-detail {
+    display: none !important;
+  }
+}
+
+/* Mobile: position backdrops but do NOT override display —
+   TiddlyWiki's $reveal sets inline display:none when closed,
+   and we must not fight it. */
+@media (max-width: 768px) {
+  .as-mobile-backdrop-library,
+  .as-mobile-backdrop-detail {
+    position: fixed;
+    inset: 48px 0 0 0;
+    z-index: 195;
+  }
+  .as-mobile-backdrop__dismiss {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    border: none;
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+    color: transparent !important;
+    font-size: 0;
+  }
+}
+
+
+  /* Detail: hide the panel when no note is selected */
+  .as-detail:not(.as-detail--has-note) {
+    display: none !important;
+  }
+
+  /* rn-blockquote & note template: tighter on mobile */
+  .as-detail__body .rn-blockquote,
+  .as-detail__body .rn-quote blockquote {
+    padding: 8px 10px;
+    font-size: 0.88em;
+  }
+  .as-detail__body .audio-note__play-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    font-size: 0.95em;
+  }
+  .as-detail__body .AudioSuite-waveform-editor__toolbar {
+    gap: 6px 8px;
+  }
+  .as-detail__body .AudioSuite-waveform-editor__toolbar .AudioSuite-btn {
+    font-size: 0.82em;
+    padding: 6px 10px;
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .as-detail__body .rn-meta {
+    font-size: 0.8em;
+  }
+  .as-detail__body .rn-meta-sep {
+    display: block;
+    margin: 2px 0;
+    opacity: 0;
+    height: 0;
+  }
+
+  /* ═══ Mobile: stack book/chapter vertically ═══ */
+  .as-now-playing__title {
+    flex-direction: column;
+    gap: 0;
+  }
+  .as-now-playing__book {
+    max-width: 100%;
+    font-size: 0.8em;
+  }
+  .as-now-playing__sep {
+    display: none;
+  }
+  .as-now-playing__chapter {
+    max-width: 100%;
+    font-size: 0.95em;
+  }
+}
+</style>

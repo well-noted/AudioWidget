@@ -1,0 +1,83 @@
+created: 20260223000000000
+modified: 20260223000000000
+tags: $:/tags/Stylesheet
+title: $:/plugins/NoteStreams/AudioSuite/styles/capture-workflow
+type: text/css
+
+/* Capture row layout */
+.AudioSuite-player__capture-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.AudioSuite-player__capture-hint {
+    font-size: 0.78em;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* Quick-tag button row */
+.AudioSuite-player__quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.AudioSuite-player__quick-tag-btn {
+    font-size: 0.85em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--palette-border, #ccc);
+    background: var(--palette-page, #f8f8f8);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.AudioSuite-player__quick-tag-btn:hover {
+    background: var(--palette-accent, #4285f4);
+    color: #fff;
+    border-color: var(--palette-accent, #4285f4);
+}
+
+.AudioSuite-player__quick-tag-btn:active {
+    transform: scale(0.95);
+}
+
+/* Visual feedback on capture */
+.AudioSuite-captured {
+    background: var(--palette-accent, #4285f4) !important;
+    color: #fff !important;
+    border-color: var(--palette-accent, #4285f4) !important;
+}
+
+/* Capturing state (hold mode) */
+.AudioSuite-capturing {
+    background: #e53e3e !important;
+    color: #fff !important;
+    animation: AudioSuite-pulse 1s ease-in-out infinite;
+}
+
+@keyframes AudioSuite-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Shortcut hint */
+.AudioSuite-player__shortcut-hint {
+    font-size: 0.72em;
+    opacity: 0.45;
+    margin-top: 4px;
+    font-family: monospace;
+}
+
+/* Focus ring for keyboard navigation */
+.AudioSuite-player:focus {
+    outline: 2px solid var(--palette-accent, #4285f4);
+    outline-offset: 2px;
+}
+
+.AudioSuite-player:focus:not(:focus-visible) {
+    outline: none;
+}

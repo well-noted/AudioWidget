@@ -1,0 +1,7 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-enabled
+type: text/plain
+caption: Editor post-processing enabled
+description: Toggle whether the raw transcription should be sent to the editing model for cleanup/formatting. Set to 'true' (default) to enable post-processing, or 'false' to disable it.
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+true

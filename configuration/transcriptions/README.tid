@@ -1,0 +1,42 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/README
+type: text/vnd.tiddlywiki
+caption: Transcription Configuration
+description: Overview of AudioSuite transcription settings
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+
+! AudioSuite Transcription Configuration
+
+These settings control the AI-powered transcription feature in the waveform editor.
+
+!! Setup
+
+# Obtain an API key from [[OpenAI|https://platform.openai.com/api-keys]]
+# Paste it into the [[API Key|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/api-key]] tiddler
+# (Optional) Set your preferred [[language|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/language]] for faster, more accurate results
+# (Optional) Add a [[prompt|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/prompt]] with names and terms that appear in your audio
+
+!! Settings
+
+|!Setting|!Tiddler|!Default|
+|API Key|[[api-key|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/api-key]]|//empty — required//|
+|Model|[[model|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/model]]|`whisper-1`|
+|Language|[[language|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/language]]|//auto-detect//|
+|Endpoint|[[endpoint|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/endpoint]]|`https://api.openai.com/v1/audio/transcriptions`|
+|Prompt|[[prompt|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/prompt]]|//empty//|
+|Editor Model|[[editor-model|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-model]]|`gpt-4.1-nano`|
+|Editor Prompt|[[editor-prompt|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-prompt]]|//empty//|
+|Editor Endpoint|[[editor-endpoint|$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/editor-endpoint]]|`https://api.openai.com/v1/chat/completions`|
+
+!! Usage
+
+* Click the ''🎤 Transcribe'' button in the waveform editor toolbar, or press ''T'' while the waveform canvas is focused
+* The selected region will be extracted, encoded as WAV (mono, 16kHz), and sent to the API
+* The transcription text will be saved to the notation tiddler's `transcription` field
+* A `transcribed` tag will be added to the notation tiddler
+
+!! Notes
+
+* ⚠️ The API key is stored in ''plaintext'' within your wiki file. Only use this feature in personal or local wikis.
+* The Whisper API has a 25MB file size limit. A 5-minute mono 16kHz WAV is approximately 10MB.
+* Regions longer than 10 minutes will still be sent but may take longer to process.
+* You can override the endpoint to use a local Whisper server (e.g. `whisper.cpp` or `faster-whisper`) or Azure OpenAI.

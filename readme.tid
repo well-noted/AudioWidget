@@ -1,0 +1,473 @@
+created: 20260223000000000
+modified: 20260223000000000
+tags: 
+title: $:/plugins/NoteStreams/AudioSuite/readme
+type: text/vnd.tiddlywiki
+
+
+
+! AudioSuite — A ~TiddlyWiki Plugin for Audio Annotation, Playback & Transcription
+
+''Plugin path:'' `$:/plugins/NoteStreams/AudioSuite`
+''Author:'' ~NoteStreams
+
+---
+
+!! Overview
+
+AudioSuite is a comprehensive ~TiddlyWiki plugin that turns your wiki into a powerful audio workstation for podcast listening, audiobook consumption, and deep audio annotation. It provides a suite of interconnected widgets that let you play audio tracks, capture timestamped notes on the fly, visually edit audio regions on a waveform canvas, and transcribe selections using the ~OpenAI Whisper API — all natively inside ~TiddlyWiki.
+
+Each annotation is stored as its own atomic tiddler with structured fields (timecodes, tags, parent references), making your notes fully searchable, filterable, and transcludable across your wiki.
+
+---
+
+!! Features
+
+* ''Podcast / Audiobook Player'' — Playlist-driven audio player with persistent playback position, playback rate control, chapter navigation, and virtual track support
+* ''Tap & Hold Capture'' — Tap the capture button for a point annotation; hold it down for a time-range annotation. Auto-pauses playback and rewinds on resume
+* ''Timestamped Notation System'' — Each note is an atomic tiddler tagged to its parent, with start/end timecodes, indent level, and custom tags. Notes render with clickable timecode badges that seek the player
+* ''Waveform Editor'' — A canvas-based visual editor for precise region selection with draggable handles, scrub audio, snap-to-silence, amplitude zoom, minimap overview, undo/redo, and keyboard nudging
+* ''Region Transcription'' — Send a selected audio region to ~OpenAI Whisper for speech-to-text, with optional GPT-powered post-editing for readability
+* ''Sound Effects Widget'' — Lightweight widget for one-shot audio playback, snippet playback, and event-triggered sounds
+* ''Palette-Aware Theming'' — All visual components read colors from the active ~TiddlyWiki `$:/palette`, CSS custom properties, or sensible defaults
+* ''Audiobook Mode'' — Chapter navigation, auto-advance on track end, virtual tracks from data-dictionary tiddlers, and per-book position tracking
+* ''Keyboard Shortcuts'' — Extensive shortcut support across the player (`Space`, `N`, arrows, `[`/`]`) and waveform editor (`←`/`→`, `S`, `T`, `Ctrl+Z`)
+* ''Mobile Support'' — Pointer event handling, a capture modal for mobile note-taking, and touch-friendly UI
+
+---
+
+!! Installation
+
+Install as a standard ~TiddlyWiki plugin by importing or dragging the plugin tiddler into your wiki. The plugin registers the following module types automatically:
+
+|!Module Type |!Files |h
+|`library` |`audio-utils.js`, `waveform-renderer.js`, and supporting modules (`audio-cache.js`, `audio-loader.js`, `mp3-parser.js`, `wav-encoder.js`, `peaks-generator.js`) |
+|`widget` |`podcast-player-widget.js`, `audio-notation-widget.js`, `waveform-editor-widget.js`, `sound-effects-widget.js` |
+
+After installation, save and reload your wiki. The four widgets become available as `<$podcast-player>`, `<$audio-notation>`, `<$waveform-editor>`, and `<$sound-effect>`.
+
+---
+
+!! Widgets Reference
+
+---
+
+!!! `<$podcast-player>`
+
+The main audio player widget. Loads a playlist of audio tiddlers via a ~TiddlyWiki filter, provides transport controls, and emits capture events for the notation widget.
+
+---
+
+!!!! Attributes
+
+|!Attribute |!Default |!Description |h
+|`filter` |`""` |~TiddlyWiki filter returning audio tiddler titles. If omitted, the widget renders an interactive filter-entry UI. |
+|`srcField` |`""` |Field name on each track tiddler that points to the audio source (e.g., `src`, `url`). Falls back to `_canonical_uri`, `canonical_uri`, `src`, `url`, or inline base64. |
+|`class` |`""` |Additional CSS class(es) for the container. |
+|`persistPosition` |`"yes"` |Whether to save/restore playback position per track. Stored in the `audio-track-position` field on the track tiddler. |
+|`saveInterval` |`5` |Seconds between periodic position saves (minimum 2). |
+|`autoPause` |`"yes"` |Pause playback automatically when a capture is made. |
+|`rewindOnResume` |`3` |Seconds to rewind when playback auto-resumes after capture. |
+|`enableShortcuts` |`"yes"` |Enable keyboard shortcuts on the player container. |
+|`mode` |`"podcast"` |Set to `"audiobook"` for chapter navigation, auto-advance, and book-tiddler tracking. |
+|`bookTiddler` |`""` |(Audiobook mode) Title of the book tiddler for storing current chapter and positions. |
+|`debug` |`""` |If non-empty, shows the native `<audio>` element with controls for debugging. |
+
+---
+
+!!!! Capture Workflow
+
+* ''Tap'' the 📌 Capture Note button → creates a ''point annotation'' at the current time
+* ''Press and hold'' (>300ms) → enters ''range capture'' mode; release to set the end time
+* Captures emit the `AudioSuite:timecode-captured` event, which the `<$audio-notation>` widget listens to
+
+---
+
+!!!! Keyboard Shortcuts
+
+|!Key |!Action |h
+|`Space` |Play / Pause |
+|`N` |Quick capture (point annotation) |
+|`←` / `→` |Rewind / Forward 10s |
+|`Shift+←` / `Shift+→` |Rewind / Forward 30s |
+|`[` / `]` |Decrease / Increase playback rate |
+
+---
+
+!!!! Child Widget Context
+
+The player sets the `currentTiddler` variable to the currently playing track, and `bookTiddler` to the configured book tiddler. Nest `<$audio-notation>` (or any widget) inside `<$podcast-player>` to inherit these variables:
+
+```
+<$podcast-player filter="[tag[Podcast Episodes]]" srcField="audio-file">
+  <$audio-notation />
+</$podcast-player>
+```
+
+---
+
+!!!! Virtual Tracks (Audiobook Mode)
+
+In audiobook mode, the player scans tiddlers of type `application/x-tiddler-dictionary` that are tagged with the `bookTiddler` tiddler title. Each key-value pair maps a virtual track title to an audio URL. Virtual tracks appear in the playlist alongside real tiddlers. Playback positions for virtual tracks are stored as a JSON map in the `audio-track-positions` field on the book tiddler.
+
+---
+
+!!! `<$audio-notation>`
+
+Displays and manages timestamped annotations for a given audio tiddler. Each annotation is stored as a separate tiddler, tagged with the parent tiddler and linked via a `parent-tiddler` field.
+
+---
+
+!!!! Attributes
+
+|!Attribute |!Default |!Description |h
+|`tiddler` |`<<currentTiddler>>` |The parent tiddler whose annotations to display. |
+|`editable` |`"yes"` |Enable inline editing (double-click to edit). |
+|`class` |`""` |Additional CSS class(es). |
+|`extraTags` |`""` |Space-separated tags to add to every new notation tiddler. |
+|`bookTiddler` |`<<bookTiddler>>` |Book tiddler for audiobook context fields. |
+|`updateParent` |`"yes"` |Whether to update the parent tiddler's text with transclusion wikitext. |
+
+---
+
+!!!! Notation Tiddler Schema
+
+Each notation tiddler has the following fields:
+
+|!Field |!Description |h
+|`title` |Auto-generated (configurable template, see below) |
+|`parent-tiddler` |Title of the audio tiddler this note belongs to |
+|`audio-source` |Resolved audio source (pointer tiddler title or URL) |
+|`start-seconds` |Numeric start time in seconds |
+|`end-seconds` |Numeric end time in seconds |
+|`start-timecode` |Formatted start time (e.g., `05:23`) |
+|`end-timecode` |Formatted end time |
+|`indent` |Outliner indent level (0-based) |
+|`tags` |Parent tiddler title + config tags + user tags |
+|`text` |The note content (plain text with `[[wikilinks]]` support) |
+|`cover` |(Audiobook) Book tiddler title |
+|`structure` |(Audiobook) Parent tiddler title |
+
+---
+
+!!!! Inline Editor
+
+* ''Double-click'' an entry to open the inline editor
+* ''Ctrl+Enter'' saves; ''Escape'' cancels
+* ''Tab'' / ''Shift+Tab'' increases / decreases indent level
+* ''Tags'' can be added per-entry via the tag input field
+* ''Delete'' removes the notation tiddler entirely
+* ''📄 button'' opens the notation tiddler in the story river via `tm-navigate`
+
+---
+
+!!!! Mobile Capture Modal
+
+On mobile devices, captures open a modal dialog for entering the note text and tags, rather than opening the inline editor directly.
+
+---
+
+!!!! Wikilink Support
+
+Note text supports ~TiddlyWiki-style wikilinks: `[[Target Tiddler]]` and `[[Target|Display Text]]`. These render as clickable links that navigate via `tm-navigate`.
+
+---
+
+!!!! Parent Tiddler Updates
+
+When `updateParent` is `"yes"`, the widget writes a managed block of wikitext into the parent tiddler, enclosed in `<!-- AudioSuite:notations:start -->` / `<!-- AudioSuite:notations:end -->` markers. This block contains `<$link>` and `<$transclude>` widgets for each notation, enabling the notes to appear in the parent tiddler's rendered output.
+
+---
+
+!!!! Legacy Migration
+
+If the parent tiddler contains old-format `[MM:SS] text` lines, the widget automatically migrates them to atomic notation tiddlers on first render.
+
+---
+
+!!! `<$waveform-editor>`
+
+A canvas-based visual waveform editor for precisely selecting and editing audio regions. Typically used within a notation tiddler to refine the start/end times of an annotation.
+
+---
+
+!!!! Attributes
+
+|!Attribute |!Default |!Description |h
+|`audio-source` |`""` |Tiddler title or URL of the audio file. Resolved via `resolveAudioSrc`. |
+|`startTime` |`0` |Initial start time (seconds). |
+|`endTime` |`0` |Initial end time (seconds). |
+|`tiddler` |`""` |Tiddler to persist start/end times to (writes `start-seconds`, `end-seconds`, `start-timecode`, `end-timecode` fields). |
+|`width` |`600` |Canvas width in CSS pixels. |
+|`height` |`120` |Canvas height in CSS pixels. |
+|`zoomPadding` |`10` |Seconds of padding around the region when zooming. |
+
+---
+
+!!!! Visual Features
+
+* ''Waveform peaks'' rendered from decoded audio data
+* ''Selected region'' highlighted with colored overlay and recolored peaks
+* ''Draggable handles'' with triangular markers at top and bottom
+* ''Play button'' centered in the region (when region is wide enough)
+* ''Minimap'' below the main canvas showing the full track with viewport indicator
+* ''Tooltip'' showing the time at the cursor position
+* ''Listen mode playhead'' (red, with diamond marker and time label)
+* ''Region playback playhead'' (green, with dot marker)
+
+---
+
+!!!! Toolbar Controls
+
+|!Button |!Description |h
+|🔍 Zoom to Region |Zoom the view to the selected region + padding |
+|↔ Full Track |Reset to full track view |
+|▶ Play / ⏹ Stop |Play or stop the selected region |
+|🎯 Set Start / Set End |Enter listen mode: audio plays and you tap to set the handle position |
+|🔁 Loop |Toggle loop playback of the selected region |
+|⏮ Pre-roll |Play 3s before and 2s after the start handle |
+|⏭ Post-roll |Play 2s before and 3s after the end handle |
+|🧲 Snap to Silence |Snap both handles to the nearest silence boundary |
+|🔊 Amplitude slider |Vertical zoom to amplify quiet sections (1×–8×) |
+|🎤 Transcribe |Send the selected region to ~OpenAI Whisper |
+
+---
+
+!!!! Interaction
+
+* ''Drag handles'' to adjust start/end times with live scrub audio
+* ''Shift+drag inside region'' to slide both handles together
+* ''Click & drag outside region'' (or inside without Shift) to pan/scroll the timeline
+* ''Click minimap'' to center the view at that point
+* ''Auto-pan'' when dragging near canvas edges (quadratic acceleration)
+
+---
+
+!!!! Keyboard Shortcuts
+
+|!Key |!Action |h
+|`←` / `→` |Nudge last-dragged handle ±1s |
+|`Shift+←` / `Shift+→` |Nudge ±5s |
+|`S` |Snap last-dragged handle to nearest silence |
+|`Shift+S` |Snap both handles to silence |
+|`T` |Transcribe selected region |
+|`Ctrl+Z` |Undo |
+|`Ctrl+Shift+Z` / `Ctrl+Y` |Redo |
+|`Space` / `Enter` (in listen mode) |Mark the time |
+|`Escape` (in listen mode) |Cancel listen mode |
+
+---
+
+!!!! Audio Loading Pipeline
+
+# ''Metadata preload'' — An `<audio>` element loads metadata for a quick duration
+# ''Cache check'' — If peaks/duration are cached, render immediately
+# ''Full decode'' — Fetch and decode the audio via Web Audio API for waveform peaks and ~AudioBuffer playback
+# ''Fallback'' — If fetch/decode fails, uses metadata-only duration with a flat track visualization
+
+---
+
+!!!! Playback Strategies
+
+# ''~AudioBuffer'' (preferred) — Sample-accurate, uses Web Audio API `AudioBufferSourceNode`
+# ''HTML Audio'' (fallback) — Uses a standard `<audio>` element with `currentTime` seeking
+# ''VBR adjustment'' — Automatically compensates for VBR MP3 duration mismatches between decoded and playback durations
+
+---
+
+!!! `<$sound-effect>`
+
+A lightweight widget for triggering audio playback. Useful for one-shot sounds, snippet playback from captures, or event-driven audio.
+
+---
+
+!!!! Attributes
+
+|!Attribute |!Default |!Description |h
+|`src` |`""` |Direct URL to the audio file. |
+|`tiddler` |`""` |Tiddler title to resolve audio from (uses `resolveAudioSrc`). |
+|`volume` |`"1"` |Playback volume (0–1). |
+|`autoplay` |`"no"` |Play immediately on render. |
+|`startTime` |`""` |Start time in seconds for snippet playback. |
+|`endTime` |`""` |End time in seconds. If equal to `startTime` or absent, plays 20s (or to track end). |
+|`trigger` |`"click"` |Trigger mode: `"click"` (click the widget), `"event"` (listen to event bus), or `"none"`. |
+|`event` |`""` |Event name to listen for when `trigger="event"`. |
+
+---
+
+!!!! Event Payload
+
+When triggered via event, the data payload can include:
+
+* `audioSource` — tiddler title to resolve
+* `startSeconds` / `endSeconds` — playback range
+* `startTime` / `endTime` — alternative string forms
+
+---
+
+!! Configuration
+
+---
+
+!!! Notation Title Template
+
+Set `$:/plugins/NoteStreams/AudioSuite/notationTitleTemplate` to customize how notation tiddler titles are generated.
+
+''Default:'' `$:/annotations/{safeParent}/{start}-{end}`
+
+''Placeholders:''
+
+|!Placeholder |!Value |h
+|`{parent}` |Raw parent tiddler title |
+|`{safeParent}` |Sanitized parent title (safe for paths) |
+|`{start}` |Start time in seconds |
+|`{end}` |End time in seconds |
+|`{start_time}` |Formatted start time (e.g., `05:23`) |
+|`{end_time}` |Formatted end time |
+
+A numeric suffix is appended automatically if the title already exists.
+
+---
+
+!!! Default Notation Tags
+
+Set `$:/plugins/NoteStreams/AudioSuite/defaultNotationTags` to a space-separated list of tags that will be added to every new notation tiddler (in addition to the parent tiddler tag).
+
+---
+
+!!! Transcription Configuration
+
+All transcription settings are stored under `$:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/`:
+
+|!Tiddler (suffix) |!Default |!Description |h
+|`api-key` |//(required)// |Your ~OpenAI API key |
+|`model` |`whisper-1` |Whisper model name |
+|`language` |`""` |ISO language code (e.g., `en`). Empty = auto-detect |
+|`endpoint` |`https://api.openai.com/v1/audio/transcriptions` |Whisper API endpoint |
+|`prompt` |`""` |Optional prompt to guide Whisper |
+|`editor-model` |`gpt-4.1-nano` |LLM model for post-editing transcriptions |
+|`editor-prompt` |//(built-in)// |System prompt for the editor pass |
+|`editor-endpoint` |`https://api.openai.com/v1/chat/completions` |Chat completions endpoint |
+|`editor-enabled` |`true` |Set to `false` to skip the editor pass |
+
+The transcription result is stored in the `transcription` field of the notation tiddler. Subsequent transcriptions are appended with a `---` separator.
+
+---
+
+!! Event Bus
+
+~AudioSuite widgets communicate via a lightweight internal event bus. Key events:
+
+|!Event |!Emitter |!Listener |!Payload |h
+|`AudioSuite:timecode-captured` |`<$podcast-player>` |`<$audio-notation>` |`{ startSeconds, endSeconds, startTimecode, endTimecode, track, audioSrc, audioPointer, srcField, skipEditor, userTags, ... }` |
+|`AudioSuite:seek` |`<$audio-notation>` (badge click) |`<$podcast-player>` |`{ seconds, track, audioSource }` |
+|`AudioSuite:notation-editor-closed` |`<$audio-notation>` |`<$podcast-player>` |`{ saved, entryTitle, skipEditor }` |
+
+The seek event supports ''cross-track seeks'' in audiobook mode — clicking a timecode badge from a different chapter automatically loads that chapter and seeks to the correct position.
+
+---
+
+!! Audio Source Resolution
+
+The `resolveAudioSrc` utility resolves audio sources from tiddlers in the following priority order:
+
+# Preferred field (if specified) → checks if value is a tiddler title and resolves its canonical URI
+# `_canonical_uri` / `canonical_uri` / `canonicalUri`
+# `src` / `url` fields
+# Inline base64 audio (tiddler with `type: audio/*` and base64 text content → `data:` URI)
+
+---
+
+!! Theming & Palette Integration
+
+All visual components resolve colors from:
+
+# ''CSS custom properties'' (e.g., `--palette-accent`, `--palette-fg`)
+# ''~TiddlyWiki `$:/palette` tiddler'' key-value pairs (e.g., `accent`, `foreground`, `page-background`)
+# ''Hardcoded defaults'' as a final fallback
+
+The notation widget applies palette values as CSS custom properties on `document.documentElement` so the accompanying stylesheet can reference them. The waveform editor sets palette variables as inline custom properties on its wrapper element.
+
+---
+
+!! Example Usage
+
+---
+
+!!! Basic Podcast Player with Annotations
+
+```
+<$podcast-player filter="[tag[Episodes]sort[title]]" srcField="audio-url">
+  <$audio-notation />
+</$podcast-player>
+```
+
+---
+
+!!! Audiobook with Chapter Navigation
+
+```
+<$podcast-player
+  filter="[tag[MyBook Chapters]sort[order]]"
+  srcField="audio-file"
+  mode="audiobook"
+  bookTiddler="MyBook"
+  rewindOnResume="5"
+>
+  <$audio-notation bookTiddler="MyBook" />
+</$podcast-player>
+```
+
+---
+
+!!! Waveform Editor in a Notation Tiddler
+
+```
+<$waveform-editor
+  audio-source={{!!audio-source}}
+  startTime={{!!start-seconds}}
+  endTime={{!!end-seconds}}
+  tiddler=<<currentTiddler>>
+  width="700"
+  height="140"
+/>
+```
+
+---
+
+!!! Sound Effect Triggered by Event
+
+```
+<$sound-effect tiddler="NotificationSound" trigger="event" event="my-custom-event" volume="0.5" />
+```
+
+---
+
+!! Browser Compatibility
+
+* Requires ''Web Audio API'' support (all modern browsers)
+* Uses ''Pointer Events'' with mouse/touch fallbacks
+* Uses ''`<canvas>`'' for waveform rendering
+* ''Fetch API'' for audio loading and transcription API calls
+* Tested on desktop and mobile (includes mobile detection and modal UI)
+
+---
+
+!! Architecture Notes
+
+The plugin is organised into focused modules:
+
+|!Module |!Role |h
+|`audio-utils.js` |Shared utilities: time formatting, title generation, event bus, source resolution |
+|`waveform-renderer.js` |Pure rendering functions for canvas (waveform + minimap) |
+|`sound-effects-widget.js` |Lightweight `<$sound-effect>` widget |
+|`podcast-player-widget.js` |Main player widget with playlist, transport, capture workflow |
+|`audio-notation-widget.js` |Notation display/editing widget with atomic tiddler storage |
+|`waveform-editor-widget.js` |Visual waveform region editor with transcription |
+|`audio-cache.js` |In-memory cache for decoded audio, peaks, view state, undo stacks |
+|`audio-loader.js` |Fetch + decode pipeline with progress callbacks |
+|`mp3-parser.js` |MP3 frame header parsing, VBR/Xing header support, byte-level seeking |
+|`wav-encoder.js` |WAV encoding from ~AudioBuffer regions for Whisper API |
+|`peaks-generator.js` |Waveform peak extraction from decoded ~AudioBuffer |
+
+All widgets extend the ~TiddlyWiki `Widget` base class and follow the standard `execute` → `render` → `refresh` → `removeChildDomNodes` lifecycle. Cleanup is thorough — every widget removes event listeners, pauses audio elements, clears timers, and releases resources on teardown.

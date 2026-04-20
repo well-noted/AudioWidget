@@ -1,0 +1,6 @@
+title: $:/plugins/NoteStreams/AudioSuite/configuration/transcriptions/prompt
+type: text/plain
+caption: Transcription Prompt
+description: Optional context prompt for the transcription model. Include names, technical terms, or other words that appear in the audio to improve accuracy. Example: "NoteStreams, TiddlyWiki, AudioSuite"
+tags: $:/plugins/NoteStreams/AudioSuite/configuration
+

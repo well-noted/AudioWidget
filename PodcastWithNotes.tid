@@ -1,0 +1,33 @@
+title: $:/plugins/NoteStreams/AudioSuite/templates/PodcastWithNotes
+type: text/vnd.tiddlywiki
+
+\define podcast-source-filter()
+[tag[Source]] [tag<currentTiddler>has[src]] +[unique[]]
+\end
+
+\define audiobook-chapter-filter()
+[tag<currentTiddler>has[_canonical_uri]nsort[chapter-number]] [tag<currentTiddler>has[src]nsort[chapter-number]] +[unique[]]
+\end
+
+<!-- Detect if this is an audiobook Source tiddler -->
+<$list filter="[<currentTiddler>tag[Audiobook]]" variable="ignore">
+<$podcast-player
+    filter=<<audiobook-chapter-filter>>
+    srcField="src"
+    mode="audiobook"
+    bookTiddler=<<currentTiddler>>>
+    <$audio-notation editable="yes" updateParent="no" extraTags="AudioNote"/>
+</$podcast-player>
+
+<details>
+<summary>📚 Chapter Import / Cleanup Tool</summary>
+{{$:/plugins/NoteStreams/AudioSuite/templates/audiobook-import}}
+</details>
+</$list>
+
+<!-- Non-audiobook Source tiddler: original behaviour -->
+<$list filter="[<currentTiddler>!tag[Audiobook]]" variable="ignore">
+<$podcast-player filter=<<podcast-source-filter>> srcField="src">
+  <$audio-notation editable="yes"/>
+</$podcast-player>
+</$list>
